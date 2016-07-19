@@ -1,6 +1,7 @@
 package com.raywenderlich.memeify;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -69,6 +70,18 @@ public class TakePictureActivity extends Activity implements View.OnClickListene
             default:
                 break;
         }
+    }
+
+    private void takePictureWithCamera() {
+
+        // create intent to capture image from camera
+        Intent captureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+
+        File photoFile = createImageFile();
+        selectedPhotoPath = Uri.parse(photoFile.getAbsolutePath());
+
+        captureIntent.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, Uri.fromFile(photoFile));
+        startActivityForResult(captureIntent, TAKE_PHOTO_REQUEST_CODE);
     }
 
     private File createImageFile() {
