@@ -1,6 +1,7 @@
 package com.raywenderlich.memeify;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -27,6 +28,10 @@ public class EnterTextActivity extends Activity implements View.OnClickListener 
     private static final String APP_PICTURE_DIRECTORY = "/Memeify";
     private static final String FILE_SUFFIX_JPG = ".jpg";
     private static final String HELVETICA_FONT = "Helvetica";
+
+    private static final String IMAGE_URI_KEY = "IMAGE_URI";
+    private static final String BITMAP_WIDTH = "BITMAP_WIDTH";
+    private static final String BITMAP_HEIGHT = "BITMAP_HEIGHT";
 
     private Bitmap viewBitmap;
     private Uri pictureUri;
@@ -56,6 +61,14 @@ public class EnterTextActivity extends Activity implements View.OnClickListener 
         bottomTextEditText = (EditText) findViewById(R.id.bottom_text_edittext);
 
         originalImage = true;
+
+        pictureUri = getIntent().getParcelableExtra(IMAGE_URI_KEY);
+
+        int bitmapWidth = getIntent().getIntExtra(BITMAP_WIDTH, 100);
+        int bitmapHeight = getIntent().getIntExtra(BITMAP_HEIGHT, 100);
+
+        Bitmap selectedImageBitmap = BitmapResizer.ShrinkBitmap(pictureUri.toString(), bitmapWidth, bitmapHeight);
+        selectedPicture.setImageBitmap(selectedImageBitmap);
     }
 
     @Override
@@ -64,9 +77,11 @@ public class EnterTextActivity extends Activity implements View.OnClickListener 
         switch (v.getId()) {
 
             case R.id.write_text_to_image_button:
+                createMeme();
                 break;
 
             case R.id.save_image_button:
+                saveImageToGallery(viewBitmap);
                 break;
         }
     }
@@ -155,6 +170,11 @@ public class EnterTextActivity extends Activity implements View.OnClickListener 
             } catch (IOException e) {
                 Toast.makeText(this, getResources().getText(R.string.save_image_failed).toString(), Toast.LENGTH_SHORT).show();
             }
+
+            // Create intent to request newly created file to be scanned, pass picture uri and broadcast intent
+            Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+            mediaScanIntent.setData(Uri.fromFile(imageFile));
+            sendBroadcast(mediaScanIntent);
 
 
             Toast.makeText(this, getResources().getText(R.string.save_image_succeeded).toString(), Toast.LENGTH_SHORT).show();
